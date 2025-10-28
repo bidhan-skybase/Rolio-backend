@@ -1,11 +1,12 @@
-import datetime
-from sqlalchemy import Column, DateTime, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
+from pydantic import BaseModel, EmailStr, ConfigDict
 
-Base=declarative_base()
+class UserCreate(BaseModel):
+    email: EmailStr
 
-class User(Base):
-    __tablename__='users'
-    id=Column(primary_key=True,index=True,autoincrement=True)
-    email=Column(String,unique=True,index=True,nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    email: str
+    created_at: datetime

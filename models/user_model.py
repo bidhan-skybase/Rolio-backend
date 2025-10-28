@@ -1,7 +1,9 @@
-import datetime
-from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from sqlalchemy import Column, DateTime, Integer, String
+from database import Base
 
-class UserModel(BaseModel):
-    id: int
-    email: EmailStr
-    created_at: datetime
+class User(Base):  
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
