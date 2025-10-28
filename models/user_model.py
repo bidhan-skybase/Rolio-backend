@@ -1,7 +1,7 @@
 import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class UserModel(BaseModel):
     id: int
-    email: str
+    email: EmailStr
     created_at: datetime
