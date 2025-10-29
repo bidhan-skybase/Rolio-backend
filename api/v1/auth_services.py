@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from pydantic import BaseModel, EmailStr
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from database import get_db
 from models.otp_model import OTP
+from models.user_model import User
 from schemas.token_schema import TokenResponse
+from schemas.user_schema import UserCreate
 from utils.email_utils import send_mail
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -83,13 +85,12 @@ async def request_otp(request: OTPRequest, db: Session = Depends(get_db)):
             detail=f"An error occurred: {str(e)}"
         )
 
-@router.post("/verify_otp", status_code=status.HTTP_200_OK,response_model=TokenResponse)
+@router.post("/verify_otp", status_code=status.HTTP_200_OK)
 async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
     """
     Verify OTP for email
     """
     try:
-        # Find OTP record
         otp_record = db.query(OTP).filter(
             and_(
                 OTP.email == request.email,
@@ -104,20 +105,32 @@ async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
                 detail="Invalid OTP"
             )
         
-        # Check if OTP is expired
         if datetime.utcnow() > otp_record.expired_at:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="OTP has expired"
             )
         
-        # Mark as verified
+        existing_user = db.query(User).filter(User.email == request.email).first()
+        
+        if not existing_user:
+            new_user = User(email=request.email)
+            db.add(new_user)
+        else:
+            new_user = existing_user
+        
         otp_record.verified = True
         db.commit()
-        token=create_access_token(data={"sub":request.email})
-       
-        return TokenResponse(token=token,token_type="Bearer")
-
+        db.refresh(new_user)
+        
+        token = create_access_token(data={"sub": request.email, "user_id": new_user.id})
+        
+        return {
+            "access_token": token.token,
+            "token_type": token.token_type,
+            "expires_at": token.token_expiry,
+            "user": new_user
+        }
     
     except HTTPException:
         raise
@@ -127,7 +140,7 @@ async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred: {str(e)}"
         )
-
+     
 @router.delete("/cleanup_expired_otps", status_code=status.HTTP_200_OK)
 async def cleanup_expired_otps(db: Session = Depends(get_db)):
     try:

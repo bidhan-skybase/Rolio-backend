@@ -2,14 +2,19 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 class UserCreate(BaseModel):
+    """Schema for creating a new user - only email needed"""
     email: EmailStr
 
+
 class UserDelete(BaseModel):
-    id:int
-    email:EmailStr
+    """Schema for deleting a user"""
+    id: int
+    email: EmailStr
+
 
 class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    """Schema for user responses"""
+    model_config = ConfigDict(from_attributes=True) 
     
     id: int
     email: str

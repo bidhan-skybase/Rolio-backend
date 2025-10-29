@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
+from schemas.token_schema import TokenResponse
+
 
 SECRET_KEY="3660e2e232767cc198e4a775ce486335e31e77c8cba5913aae04c748e1d3425d"
 ALGORITHM="HS256"
@@ -13,7 +15,11 @@ def create_access_token(data: dict| None = None):
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return TokenResponse(
+        token=encoded_jwt,
+        token_type="Bearer",
+        token_expiry=expire
+    )
 
 def verify_access_token(token: str):
     try:
