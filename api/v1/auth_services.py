@@ -4,9 +4,11 @@ import random
 from datetime import datetime, timedelta
 from database import get_db
 from models.otp_model import OTP
+from schemas.token_schema import TokenResponse
 from utils.email_utils import send_mail
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
+from utils.token_utils import create_access_token
 
 router = APIRouter()
 
@@ -81,7 +83,7 @@ async def request_otp(request: OTPRequest, db: Session = Depends(get_db)):
             detail=f"An error occurred: {str(e)}"
         )
 
-@router.post("/verify_otp", status_code=status.HTTP_200_OK)
+@router.post("/verify_otp", status_code=status.HTTP_200_OK,response_model=TokenResponse)
 async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
     """
     Verify OTP for email
@@ -112,11 +114,10 @@ async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
         # Mark as verified
         otp_record.verified = True
         db.commit()
-        
-        return {
-            "message": "OTP verified successfully",
-            "email": request.email
-        }
+        token=create_access_token(data={"sub":request.email})
+       
+        return TokenResponse(token=token,token_type="Bearer")
+
     
     except HTTPException:
         raise
@@ -131,8 +132,9 @@ async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
 async def cleanup_expired_otps(db: Session = Depends(get_db)):
     try:
         deleted_count = db.query(OTP).filter(
-            OTP.expired_at < datetime.utcnow()
+            (OTP.expired_at < datetime.utcnow()) | (OTP.verified==True)
         ).delete()
+        
         
         db.commit()
         

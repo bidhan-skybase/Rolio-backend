@@ -7,6 +7,7 @@ from pydantic import EmailStr
 def send_mail(to: EmailStr, otp: int):
     configuration = Configuration()
     configuration.api_key['api-key'] = os.getenv("ROLIO_MAIL")
+    print(os.getenv("ROLIO_MAIL"))
 
     api_instance = TransactionalEmailsApi(ApiClient(configuration))
 
