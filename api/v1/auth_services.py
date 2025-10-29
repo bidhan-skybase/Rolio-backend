@@ -27,7 +27,7 @@ async def request_otp(request: OTPRequest, db: Session = Depends(get_db)):
         recent_otp = db.query(OTP).filter(
             and_(
                 OTP.email == request.email,
-                OTP.created_at > datetime.utcnow() - timedelta(minutes=1)
+                OTP.created_at > datetime.now() - timedelta(minutes=1)
             )
         ).first()
         
