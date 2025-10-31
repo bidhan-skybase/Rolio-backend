@@ -88,3 +88,21 @@ def delete_job(
     db.delete(job)
     db.commit()
     return None
+
+@router.get("/stats", status_code=status.HTTP_200_OK, response_model=dict)
+def get_dashboard_stats(
+    jobs=Depends(list_jobs)  
+):
+    saved = applied = offered = 0
+    for job in jobs:
+        if job.status == 'saved':
+            saved += 1
+        elif job.status == 'applied':
+            applied += 1
+        elif job.status == 'offered':
+            offered += 1
+    return {
+        "saved": saved,
+        "applied": applied,
+        "offered": offered
+    }
