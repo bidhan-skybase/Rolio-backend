@@ -8,9 +8,11 @@ from database import Base
 
 
 class JobStatus(str, Enum):
-    applied = "applied"
-    interview = "interview"
-    offer = "offer"
+    saved="saved"
+    applied='applied'
+    interview='interview'
+    rejected='rejected'
+    offered='offered'
 
 
 class Job(Base):
@@ -25,7 +27,7 @@ class Job(Base):
     salary = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     tags = Column(PG_ARRAY(String), nullable=True)
-    status = Column(PgEnum(JobStatus, name="job_status_enum"), nullable=False, default=JobStatus.applied)
+    status = Column(PgEnum(JobStatus, name="job_status_enum"), nullable=False, default=JobStatus.saved)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     user = relationship("User", back_populates="jobs")

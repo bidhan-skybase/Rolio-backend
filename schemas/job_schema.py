@@ -3,11 +3,8 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict
 from enum import Enum
 
+from models.job_model import JobStatus
 
-class JobStatus(str, Enum):
-    applied = "applied"
-    interview = "interview"
-    offer = "offer"
 
 
 class JobBase(BaseModel):
