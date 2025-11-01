@@ -15,7 +15,7 @@ class JobBase(BaseModel):
     salary: Optional[str] = None
     description: Optional[str] = None
     tags: Optional[List[str]] = None
-    status: JobStatus = JobStatus.applied
+    status: JobStatus = JobStatus.saved
 
 
 class JobCreate(JobBase):

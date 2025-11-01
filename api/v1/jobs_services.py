@@ -15,7 +15,7 @@ router = APIRouter(
 # -------------------------------
 # Create Job
 # -------------------------------
-@router.post("/", response_model=JobBaseResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/create", response_model=JobBaseResponse, status_code=status.HTTP_201_CREATED)
 def create_job(
     job: JobCreate,
     db: Session = Depends(get_db),
@@ -50,6 +50,9 @@ def list_jobs(
 # -------------------------------
 # Update Job Status
 # -------------------------------
+
+
+
 @router.patch("/{job_id}/status", response_model=JobBaseResponse)
 def update_job_status(
     job_id: int,
@@ -62,7 +65,7 @@ def update_job_status(
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
 
-    if status_value not in ["applied", "interview", "offer"]:
+    if status_value not in ["applied", "interview", "offered",'saved','rejected']:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid status value")
 
     job.status = status_value
@@ -74,7 +77,7 @@ def update_job_status(
 # -------------------------------
 # Delete Job
 # -------------------------------
-@router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_job(
     job_id: int,
     db: Session = Depends(get_db),
