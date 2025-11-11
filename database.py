@@ -1,9 +1,10 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base
 
 
-db_url = "postgresql://postgres:1234@localhost:5432/rolio_db"
+db_url = os.getenv("DB_URL")
 
 engine = create_engine(
     db_url,
